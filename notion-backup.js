@@ -2,7 +2,8 @@
 /* eslint-disable quotes */
 /* eslint no-await-in-loop: 0 */
 
-let axios = require("axios"),
+let { program } = require("commander"),
+  axios = require("axios"),
   { retry } = require("async"),
   { createWriteStream, mkdirSync, rmdirSync } = require("fs"),
   { join } = require("path"),
@@ -18,6 +19,19 @@ let axios = require("axios"),
     console.error(str);
     process.exit(1);
   };
+
+program.version(require("./package.json").version);
+
+program.option(
+  "-f, --format <format>",
+  "Link with which format to return, HTML or Markdown"
+);
+
+let { format } = program.opts();
+format = format.toLowerCase();
+
+if (format != "html" || format != "markdown")
+  die("Format can be HTML or Markdown");
 
 if (!NOTION_TOKEN || !NOTION_SPACE_ID) {
   die(`Need to have both NOTION_TOKEN and NOTION_SPACE_ID defined in the environment.
@@ -90,35 +104,14 @@ async function exportFromNotion(format) {
         break;
       }
     }
-    let res = await client({
-      method: "GET",
-      url: exportURL,
-      responseType: "stream",
-    });
-    let stream = res.data.pipe(
-      createWriteStream(join(process.cwd(), `${format}.zip`))
-    );
-    await new Promise((resolve, reject) => {
-      stream.on("close", resolve);
-      stream.on("error", reject);
-    });
+    return exportURL;
   } catch (err) {
     die(err);
   }
 }
 
-async function run() {
-  let cwd = process.cwd(),
-    mdDir = join(cwd, "markdown"),
-    mdFile = join(cwd, "markdown.zip"),
-    htmlDir = join(cwd, "html"),
-    htmlFile = join(cwd, "html.zip");
-  await exportFromNotion("markdown");
-  rmdirSync(mdDir, { recursive: true });
-  mkdirSync(mdDir, { recursive: true });
-  await exportFromNotion("html");
-  rmdirSync(htmlDir, { recursive: true });
-  mkdirSync(htmlDir, { recursive: true });
+async function run(format) {
+  await exportFromNotion(format);
 }
 
-run();
+run(format);

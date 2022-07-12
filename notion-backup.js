@@ -19,13 +19,16 @@ let { program } = require("commander"),
 
 program.version(require("./package.json").version);
 
-program.option(
-  "-f, --format <format>",
-  "Link with which format to return, HTML or Markdown"
-);
+program
+  .option(
+    "-f, --format <format>",
+    "Link with which format to return, HTML or Markdown",
+    "html"
+  )
+  .option("-d, --debug", "Debug option", false)
+  .parse();
 
-let { format } = program.opts();
-if (!format) format = "html";
+let { format, debug } = program.opts();
 format = format?.toLowerCase();
 
 if (!["html", "markdown"].includes(format))
@@ -35,6 +38,10 @@ if (!NOTION_TOKEN || !NOTION_SPACE_ID) {
   die(`Need to have both NOTION_TOKEN and NOTION_SPACE_ID defined in the environment.
 See https://medium.com/@arturburtsev/automated-notion-backups-f6af4edc298d for
 notes on how to get that information.`);
+}
+
+function log(message) {
+  if (debug) console.log(message);
 }
 
 async function post(endpoint, data) {
@@ -59,7 +66,7 @@ async function exportFromNotion(format) {
         },
       },
     });
-    console.warn(`Enqueued task ${taskId}`);
+    log(`Enqueued task ${taskId}`);
     let failCount = 0,
       exportURL;
     while (true) {
@@ -72,22 +79,22 @@ async function exportFromNotion(format) {
       let task = tasks.find((t) => t.id === taskId);
       if (!task) {
         failCount++;
-        console.warn(`No task, waiting.`);
+        log(`No task, waiting.`);
         continue;
       }
       if (!task.status) {
         failCount++;
-        console.warn(
+        log(
           `No task status, waiting. Task was:\n${JSON.stringify(task, null, 2)}`
         );
         continue;
       }
       if (task.state === "in_progress") {
-        console.warn(`Pages exported: ${task.status.pagesExported}`);
+        log(`Pages exported: ${task.status.pagesExported}`);
       }
       if (task.state === "failure") {
         failCount++;
-        console.warn(`Task error: ${task.error}`);
+        log(`Task error: ${task.error}`);
         continue;
       }
       if (task.state === "success") {
@@ -103,8 +110,8 @@ async function exportFromNotion(format) {
 
 async function run(format) {
   const url = await exportFromNotion(format);
-  console.log(url);
+  log(url);
   return url;
 }
 
-run(format);
+console.log(run(format)); //return for bash

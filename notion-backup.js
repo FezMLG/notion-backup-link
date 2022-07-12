@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+require("dotenv-flow").config();
 
 let { program } = require("commander"),
   axios = require("axios"),

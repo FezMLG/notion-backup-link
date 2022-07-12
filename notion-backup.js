@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable quotes */
-/* eslint no-await-in-loop: 0 */
 
 let { program } = require("commander"),
   axios = require("axios"),
@@ -28,9 +26,10 @@ program.option(
 );
 
 let { format } = program.opts();
-format = format.toLowerCase();
+if (!format) format = "html";
+format = format?.toLowerCase();
 
-if (format != "html" || format != "markdown")
+if (!["html", "markdown"].includes(format))
   die("Format can be HTML or Markdown");
 
 if (!NOTION_TOKEN || !NOTION_SPACE_ID) {
@@ -111,7 +110,9 @@ async function exportFromNotion(format) {
 }
 
 async function run(format) {
-  await exportFromNotion(format);
+  const url = await exportFromNotion(format);
+  console.log(url);
+  return url;
 }
 
 run(format);

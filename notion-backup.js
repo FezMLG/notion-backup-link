@@ -110,8 +110,8 @@ async function exportFromNotion(format) {
 
 async function run(format) {
   const url = await exportFromNotion(format);
-  log(url);
+  console.log(url); //return for bash
   return url;
 }
 
-console.log(run(format)); //return for bash
+run(format);

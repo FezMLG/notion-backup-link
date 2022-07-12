@@ -3,7 +3,6 @@
 let { program } = require("commander"),
   axios = require("axios"),
   { retry } = require("async"),
-  { createWriteStream, mkdirSync, rmdirSync } = require("fs"),
   { join } = require("path"),
   notionAPI = "https://www.notion.so/api/v3",
   { NOTION_TOKEN, NOTION_SPACE_ID } = process.env,
@@ -42,12 +41,6 @@ async function post(endpoint, data) {
   return client.post(endpoint, data);
 }
 
-async function sleep(seconds) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, seconds * 1000);
-  });
-}
-
 // formats: markdown, html
 async function exportFromNotion(format) {
   try {
@@ -71,7 +64,6 @@ async function exportFromNotion(format) {
       exportURL;
     while (true) {
       if (failCount >= 5) break;
-      await sleep(10);
       let {
         data: { results: tasks },
       } = await retry({ times: 3, interval: 2000 }, async () =>

@@ -1,0 +1,53 @@
+{
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [-340, 320]
+    },
+    {
+      "parameters": {
+        "command": "cd /home/node/.n8n &&\nnode notion-backup.js"
+      },
+      "name": "get link",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [-120, 320]
+    },
+    {
+      "parameters": {
+        "command": "=cd /home/node/.n8n &&\nchmod +x ./upload_file_test.sh &&\n./upload_file_test.sh \"{{$json[\"stdout\"]}}\" 5000000  random_path"
+      },
+      "name": "run script",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [140, 320]
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "get link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get link": {
+      "main": [
+        [
+          {
+            "node": "run script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

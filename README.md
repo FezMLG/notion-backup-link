@@ -40,7 +40,7 @@ docker build -t n8n_local .
 
 docker run \
  -p 5678:5678 \
- -v $(pwd):/home/node/.n8n \
+ -v $(pwd)/.n8n:/home/node/.n8n \
  -e N8N_BASIC_AUTH_ACTIVE="true" \
  -e N8N_BASIC_AUTH_USER="user" \
  -e N8N_BASIC_AUTH_PASSWORD="password" \

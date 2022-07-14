@@ -109,3 +109,6 @@ markdown
 markdown.zip
 .envrc
 json/
+
+.n8n
+.DS_Store

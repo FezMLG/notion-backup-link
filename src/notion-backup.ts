@@ -2,8 +2,7 @@
 
 import axios from "axios";
 import { program } from "commander";
-import { Format, TaskState } from "./Format.enum";
-const { retry } = require("async");
+import { Format, TaskDto, TaskState } from "./interfaces";
 
 require("dotenv-flow").config();
 
@@ -20,7 +19,7 @@ const die = (str: string | unknown) => {
   process.exit(1);
 };
 
-program.version(require("./package.json").version);
+program.version(require("../package.json").version);
 
 program
   .option(
@@ -47,7 +46,7 @@ const log = (message: string) => {
   if (debug) console.log(message);
 };
 
-const post = async (endpoint: string, data: any) => {
+const post = async (endpoint: string, data: TaskDto | { taskIds: any[] }) => {
   return client.post(endpoint, data);
 };
 
@@ -72,20 +71,22 @@ const exportFromNotion = async (format: Format) => {
     log(`Enqueued task ${taskId}`);
     let failCount = 0,
       exportURL;
-    while (true) {
+
+    let loop = true;
+    while (loop) {
       if (failCount >= 5) break;
-      let {
+      const {
         data: { results: tasks },
-      } = await retry({ times: 3, interval: 2000 }, async () =>
-        post("getTasks", { taskIds: [taskId] })
-      );
+      } = await post("getTasks", { taskIds: [taskId] });
+
       let task = tasks.find((t: any) => t.id === taskId);
-      console.log(task);
+
       if (!task) {
         failCount++;
         log(`No task, waiting.`);
         continue;
       }
+
       if (!task.status) {
         failCount++;
         log(
@@ -93,17 +94,20 @@ const exportFromNotion = async (format: Format) => {
         );
         continue;
       }
-      if (task.state === TaskState.IN_PROGRESS) {
-        log(`Pages exported: ${task.status.pagesExported}`);
-      }
-      if (task.state === TaskState.FAILURE) {
-        failCount++;
-        log(`Task error: ${task.error}`);
-        continue;
-      }
-      if (task.state === TaskState.SUCCESS) {
-        exportURL = task.status.exportURL;
-        break;
+      switch (task.state) {
+        case TaskState.IN_PROGRESS:
+          log(`Pages exported: ${task.status.pagesExported}`);
+          break;
+
+        case TaskState.FAILURE:
+          log(`Task error: ${task.error}`);
+          failCount++;
+          break;
+
+        case TaskState.SUCCESS:
+          exportURL = task.status.exportURL;
+          loop = false;
+          break;
       }
     }
     return exportURL;

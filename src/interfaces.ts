@@ -7,7 +7,7 @@ export interface TaskDto {
   task: {
     eventName: string;
     request: {
-      spaceId: string;
+      spaceId: string | undefined;
       exportOptions: {
         exportType: Format;
         timeZone: string;

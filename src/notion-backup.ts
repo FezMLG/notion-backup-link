@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { program } from "commander";
+import { getContentType, getName } from "./headersTools";
 import { Format, TaskDto, TaskState } from "./interfaces";
 
 require("dotenv-flow").config();
@@ -48,12 +49,12 @@ const post = async (endpoint: string, data: TaskDto | { taskIds: any[] }) => {
   return client.post(endpoint, data);
 };
 
+let response: AxiosResponse;
+
 // formats: markdown, html
 const exportFromNotion = async (format: Format) => {
   try {
-    let {
-      data: { taskId },
-    } = await post("enqueueTask", {
+    response = await post("enqueueTask", {
       task: {
         eventName: "exportSpace",
         request: {
@@ -66,6 +67,9 @@ const exportFromNotion = async (format: Format) => {
         },
       },
     });
+    let {
+      data: { taskId },
+    } = response;
     log(`Enqueued task ${taskId}`);
     let failCount = 0,
       exportURL;
@@ -78,7 +82,6 @@ const exportFromNotion = async (format: Format) => {
       } = await post("getTasks", { taskIds: [taskId] });
 
       let task = tasks.find((t: any) => t.id === taskId);
-      console.dir(task);
 
       if (!task) {
         failCount++;
@@ -120,7 +123,10 @@ const run = async (format: Format) => {
   console.log(
     JSON.stringify({
       url,
-      name: "asda",
+      name: `${format}-${Date.now()}`,
+      contentType: `application/zip`,
+      // name: getName(response),
+      // contentType: getContentType(response),
     })
   ); //return for bash
   return url;

@@ -19,8 +19,6 @@ const die = (str: string | unknown) => {
   process.exit(1);
 };
 
-program.version(require("../package.json").version);
-
 program
   .option(
     "-f, --format <format>",
@@ -80,6 +78,7 @@ const exportFromNotion = async (format: Format) => {
       } = await post("getTasks", { taskIds: [taskId] });
 
       let task = tasks.find((t: any) => t.id === taskId);
+      console.dir(task);
 
       if (!task) {
         failCount++;
@@ -118,7 +117,12 @@ const exportFromNotion = async (format: Format) => {
 
 const run = async (format: Format) => {
   const url = await exportFromNotion(format);
-  console.log(url); //return for bash
+  console.log(
+    JSON.stringify({
+      url,
+      name: "asda",
+    })
+  ); //return for bash
   return url;
 };
 

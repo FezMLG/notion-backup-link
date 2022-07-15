@@ -1,0 +1,106 @@
+{
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [-460, 320]
+    },
+    {
+      "parameters": {
+        "command": "=cd /home/node/dist && rm -f .env && touch .env && echo NOTION_TOKEN={{$json[\"NOTION_TOKEN\"]}} >> .env && echo NOTION_SPACE_ID={{$json[\"NOTION_SPACE_ID\"]}} >> .env &&\nnode notion-backup.js"
+      },
+      "name": "get link",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [40, 320]
+    },
+    {
+      "parameters": {
+        "command": "=cd /home/node/.n8n &&\nchmod +x ./upload_file_test.sh &&\n./upload_file_test.sh {{$json[\"stdout\"]}} 5000000  random_path"
+      },
+      "name": "run script",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [380, 320]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "NOTION_TOKEN",
+              "value": "63ece8ac9813ecfab85a2250ffb656358eafa81cbd2cc27d78c7665663538145c193dd7f0a741ae1c2c7a8c6602aad8d003f1ca92046cc88f7fcf5a0d9930842777bd92aa23eccab5fef6c8e565f"
+            },
+            {
+              "name": "NOTION_SPACE_ID",
+              "value": "a9e55d05-6352-4953-8b7c-dc7af8efa6fd"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [-220, 240]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Code here will run once per input item.\n// More info and help: https://docs.n8n.io/nodes/n8n-nodes-base.functionItem\n\nitem.url = JSON.parse(item.stdout).url;\n\n// You can write logs to the browser console\nconsole.log('Done!');\n\nreturn item;"
+      },
+      "name": "FunctionItem",
+      "type": "n8n-nodes-base.functionItem",
+      "typeVersion": 1,
+      "position": [180, 200]
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get link": {
+      "main": [
+        [
+          {
+            "node": "FunctionItem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set": {
+      "main": [
+        [
+          {
+            "node": "get link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FunctionItem": {
+      "main": [
+        [
+          {
+            "node": "run script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

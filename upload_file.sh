@@ -5,9 +5,10 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-S3_BUCKET_NAME="notion_backup"
+S3_BUCKET_NAME=elp-prod-notion-backup-storage
 LINK_TO_FILE_TO_UPLOAD="${1}"
 FILE_SIZE_IN_BYTES="${2}"
-PATH_ON_S3="${3}"
+PATH_ON_S3="/${3}"
 
-curl $LINK_TO_FILE_TO_UPLOAD | aws s3 cp - s3://$S3_BUCKET_NAME/$PATH_ON_S3 --expected-size $FILE_SIZE_IN_BYTES
+curl $LINK_TO_FILE_TO_UPLOAD | aws s3 cp - s3://$S3_BUCKET_NAME/$PATH_ON_S3 --content-type "application/zip"
+# --expected-size $FILE_SIZE_IN_BYTES

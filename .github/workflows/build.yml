@@ -7,22 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  verify_release_tags:
-    name: Verify release tags
-    runs-on: ubuntu-latest
-    outputs:
-      has_tablet_version_tag: ${{ steps.verify_tablet_tag.outputs.has_tag }}
-      tablet_version: ${{ steps.set_tablet_version.outputs.version }}
-
-    steps:
-      - uses: actions/checkout@v1
-
-  publish_tablet_image:
-    name: Publish tablet image
-    needs:
-      - test_and_build
-      - verify_release_tags
-    if: ${{ needs.verify_release_tags.outputs.has_tablet_version_tag == 'yes' }}
+  publish_n8n_image:
+    name: Publish n8n image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

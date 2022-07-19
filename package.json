@@ -12,11 +12,6 @@
     "compile": "tsc",
     "docker": "cd .docker && docker-compose build && docker-compose up -d"
   },
-  "bin": {
-    "notion-backup": "notion-backup.js",
-    "notion-backup-item": "notion-backup-item.js"
-  },
-  "author": "Robin Berjon <robin@berjon.com>",
   "license": "MIT",
   "dependencies": {
     "axios": "^0.21.1",

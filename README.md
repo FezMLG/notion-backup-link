@@ -18,7 +18,7 @@ authentication token.
 
 1. Get the `NOTION_TOKEN` and `NOTION_SPACE_ID` as explained in
    [this blog post](https://medium.com/@arturburtsev/automated-notion-backups-f6af4edc298d).
-2. In project root create `.env.local` file from `.env` file and fill in it.
+2. In project root create `.env.local` file from `.env` file and fill in it (for aws see Run locally section).
 
 ## Usage
 
@@ -36,5 +36,12 @@ $ node notion-backup.js
 ### Run locally
 
 ```
+# Login to aws with awsume
+$ awsume [your-role]
+
+# Print and copy credentials to .env.local file
+$ env | grep AWS
+
+# Build and run containers
 $ npm run docker
 ```

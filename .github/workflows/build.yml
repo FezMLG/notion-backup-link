@@ -16,9 +16,9 @@ jobs:
       - name: Prepare image tag
         id: prepare_image_tag
         run: |
-          version=$(jq -r .version ./package.json)
+          version_=$(jq -r .version ./package.json)
           n8n_version=$(jq -r .n8n-version ./package.json)
-          VERSION="v2-${n8n-version}-${version}"
+          VERSION="v2-${n8n-version}-${version_}"
           IMAGE="683390223851.dkr.ecr.eu-west-1.amazonaws.com/elp-prod-n8n"
           echo ::set-output name=version::${VERSION}
           echo ::set-output name=tagged_image::${IMAGE}:${VERSION}

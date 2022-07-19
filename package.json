@@ -8,7 +8,9 @@
   },
   "scripts": {
     "start": "ts-node .",
-    "compile": "tsc"
+    "compile": "tsc",
+    "docker:build": "cd .docker && docker-compose build && docker-compose up -d",
+    "docker:run": "cd .docker && docker-compose up -d"
   },
   "bin": {
     "notion-backup": "notion-backup.js",

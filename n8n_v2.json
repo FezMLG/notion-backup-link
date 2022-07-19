@@ -1,0 +1,245 @@
+{
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [120, 300]
+    },
+    {
+      "parameters": {
+        "amount": 5,
+        "unit": "seconds"
+      },
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1160, 320],
+      "webhookId": "53850256-7b11-438d-ace8-59690e80531f"
+    },
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "requestMethod": "POST",
+        "url": "https://www.notion.so/api/v3/enqueueTask",
+        "responseFormat": "string",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\n      \"task\": {\n        \"eventName\": \"exportSpace\",\n        \"request\": {\n          \"spaceId\": \"{{$json[\"NOTION_SPACE_ID\"]}}\",\n          \"exportOptions\": {\n            \"exportType\": \"html\",\n            \"timeZone\": \"Europe/Warsaw\",\n            \"locale\": \"pl\"\n          }\n    }\n  }\n}"
+      },
+      "name": "Trigger backup",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [480, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "7",
+          "name": "Notion Konrad"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "requestMethod": "POST",
+        "url": "https://www.notion.so/api/v3/getTasks",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={ \"taskIds\": [\"{{$node[\"Trigger backup\"].json[\"data\"][\"taskId\"]}}\"]}"
+      },
+      "name": "Get Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "7",
+          "name": "Notion Konrad"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "NOTION_SPACE_ID",
+              "value": "a9e55d05-6352-4953-8b7c-dc7af8efa6fd"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set space id",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [300, 300]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{$json[\"results\"][0][\"state\"]}}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "failure"
+            },
+            {
+              "value2": "in_progress",
+              "output": 2
+            },
+            {
+              "value2": "success",
+              "output": 1
+            }
+          ]
+        }
+      },
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [860, 300]
+    },
+    {
+      "parameters": {
+        "command": "=curl \"{{$json[\"results\"][0][\"status\"][\"exportURL\"]}}\" | aws s3 cp - s3://elp-prod-notion-backup-storage/{{$json[\"results\"][0][\"name\"]}} --content-type \"application/zip\""
+      },
+      "name": "Execute Command",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [1480, 180]
+    },
+    {
+      "parameters": {
+        "functionCode": "item.results.forEach((result, index)=>{\n  result.name = `Eksport-${Date.now()}-index-${result.request.exportOptions.exportType}.zip`;\n})\n\nreturn item;"
+      },
+      "name": "FunctionItem",
+      "type": "n8n-nodes-base.functionItem",
+      "typeVersion": 1,
+      "position": [1320, 180]
+    },
+    {
+      "parameters": {
+        "channel": "n8n-logs",
+        "text": "Export for Notion",
+        "attachments": [],
+        "otherOptions": {}
+      },
+      "name": "Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [1640, -60],
+      "credentials": {
+        "slackApi": {
+          "id": "4",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Set space id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger backup": {
+      "main": [
+        [
+          {
+            "node": "Get Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Status": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set space id": {
+      "main": [
+        [
+          {
+            "node": "Trigger backup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Slack",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FunctionItem",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FunctionItem": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

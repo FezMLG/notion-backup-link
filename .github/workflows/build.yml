@@ -17,7 +17,7 @@ jobs:
         id: prepare_image_tag
         run: |
           VERSION_P=$(jq -r .version ./package.json)
-          N8N_VERSION=$(jq -r .n8n-version ./package.json)
+          N8N_VERSION=$(jq -r .n8nVersion ./package.json)
           VERSION="v2-${N8N_VERSION}-${VERSION_P}"
           IMAGE="683390223851.dkr.ecr.eu-west-1.amazonaws.com/elp-prod-n8n"
           echo ::set-output name=version::${VERSION}
